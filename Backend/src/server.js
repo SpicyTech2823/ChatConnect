@@ -1,22 +1,16 @@
-require("dotenv").config();
-const app = require("./app");
-const http = require("http");
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+
+const authRoutes = require('./routes/auth');
+
+const app = express();
+app.use(cors({ origin: 'http://localhost:5173' }));
+app.use(express.json());
+
+app.use('/api/auth', authRoutes);
+
+app.get('/', (req, res) => res.json({ message: 'API running' }));
+
 const PORT = process.env.PORT || 5000;
-const {
-    testConnection
-  } = require("./config/db");
-const server = http.createServer(app);
-
-const startServer = async () => {
-  try {
-    await testConnection();
-    server.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`);
-    }
-    );
-    } catch (error) {
-        console.error("Error starting the server:", error);
-    }
-};
-
-startServer();
+app.listen(PORT, () => console.log(` Server running on port ${PORT}`));
