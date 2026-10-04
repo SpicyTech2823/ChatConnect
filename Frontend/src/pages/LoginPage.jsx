@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Circle } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
 const PREVIEW_MESSAGES = [
   { from: "them", text: "hey, you free to look at the designs?" },
   { from: "me", text: "just opened them, one sec" },
@@ -68,9 +69,8 @@ function ChatPreview() {
   );
 }
 
-export default function RegisterPage() {
-  const [name, setName] = useState("");
-  const [number, setNumber] = useState("");
+export default function LoginPage() {
+  const { login } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
@@ -88,14 +88,19 @@ export default function RegisterPage() {
     return next;
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const next = validate();
     setErrors(next);
     if (Object.keys(next).length === 0) {
       setSubmitting(true);
-      // Wire this up to your auth call.
-      setTimeout(() => setSubmitting(false), 1200);
+      try {
+        await login(email.trim(), password);
+      } catch (error) {
+        setErrors({ form: error.message });
+      } finally {
+        setSubmitting(false);
+      }
     }
   }
 
@@ -136,9 +141,10 @@ export default function RegisterPage() {
         <div className="cl-panel cl-panel-right">
           <form className="cl-form" onSubmit={handleSubmit} noValidate>
             <div className="cl-form-head">
-              <h2>Create an account</h2>
+              <h2>Welcome back!</h2>
               <p>Join us to start chatting!</p>
             </div>
+            {errors.form && <span className="cl-error" role="alert">{errors.form}</span>}
 
             <label className="cl-field">
               <span>Email</span>
@@ -169,6 +175,7 @@ export default function RegisterPage() {
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Your password"
                   autoComplete="current-password"
+                  
                 />
                 <button
                   type="button"
@@ -193,9 +200,7 @@ export default function RegisterPage() {
                 />
                 <span>Stay signed in</span>
               </label>
-              <a href="/forgot-password" className="cl-link">
-                Forgot password?
-              </a>
+              <span />
             </div>
 
             <button type="submit" className="cl-submit" disabled={submitting}>

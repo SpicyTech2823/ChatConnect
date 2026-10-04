@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Circle, Phone, User } from "lucide-react";
+import { useAuth } from "../hooks/useAuth";
 const PREVIEW_MESSAGES = [
   { from: "them", text: "hey, you free to look at the designs?" },
   { from: "me", text: "just opened them, one sec" },
@@ -69,6 +70,7 @@ function ChatPreview() {
 }
 
 export default function RegisterPage() {
+  const { register } = useAuth();
   const [name, setName] = useState("");
   const [number, setNumber] = useState("");
   const [email, setEmail] = useState("");
@@ -84,18 +86,26 @@ export default function RegisterPage() {
     if (!email.trim()) next.email = "Enter your email";
     else if (!/^\S+@\S+\.\S+$/.test(email))
       next.email = "That email doesn't look right";
+    if (!name.trim()) next.name = "Enter your name";
     if (!password) next.password = "Enter your password";
+    else if (password.length < 8) next.password = "Use at least 8 characters";
+    if (confirmPassword !== password) next.confirmPassword = "Passwords do not match";
     return next;
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const next = validate();
     setErrors(next);
     if (Object.keys(next).length === 0) {
       setSubmitting(true);
-      // Wire this up to your auth call.
-      setTimeout(() => setSubmitting(false), 1200);
+      try {
+        await register(name.trim(), email.trim(), password, number.trim());
+      } catch (error) {
+        setErrors({ form: error.message });
+      } finally {
+        setSubmitting(false);
+      }
     }
   }
 
@@ -139,6 +149,7 @@ export default function RegisterPage() {
               <h2>Create an account</h2>
               <p>Join us to start chatting!</p>
             </div>
+            {errors.form && <span className="cl-error" role="alert">{errors.form}</span>}
             <label className="cl-field">
               <span>Name</span>
               <div className={`cl-input`}>
@@ -151,6 +162,7 @@ export default function RegisterPage() {
                   autoComplete="name"
                 />
               </div>
+              {errors.name && <span className="cl-error">{errors.name}</span>}
             </label>
 
             <label className="cl-field">
@@ -165,6 +177,7 @@ export default function RegisterPage() {
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="you@example.com"
                   autoComplete="email"
+                  className = "text-white "
                 />
               </div>
               {errors.email && <span className="cl-error">{errors.email}</span>}
@@ -176,7 +189,7 @@ export default function RegisterPage() {
               >
                 <Phone size={17} strokeWidth={1.8} />
                 <input
-                  type="number"
+                  type="tel"
                   value={number}
                   onChange={(e) => setNumber(e.target.value)}
                   placeholder="+855 xxx xxx"
@@ -255,7 +268,7 @@ export default function RegisterPage() {
             </button>
 
             <p className="cl-switch">
-              Already have an account? <a href="/">Log in</a>
+              Already have an account? <a href="/login">Log in</a>
             </p>
           </form>
         </div>
