@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Mail, Lock, Eye, EyeOff, ArrowRight, Circle } from "lucide-react";
 import { useAuth } from "../hooks/useAuth";
+import {useNavigate} from "react-router-dom";
 const PREVIEW_MESSAGES = [
   { from: "them", text: "hey, you free to look at the designs?" },
   { from: "me", text: "just opened them, one sec" },
@@ -137,7 +138,7 @@ export default function LoginPage() {
           </div>
         </div>
 
-        {/* Right: Register form */}
+        {/* Right: login form */}
         <div className="cl-panel cl-panel-right">
           <form className="cl-form" onSubmit={handleSubmit} noValidate>
             <div className="cl-form-head">
